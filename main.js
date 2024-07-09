@@ -63,9 +63,9 @@ bot.on('callback_query', (callbackQuery) => {
     const data = callbackQuery.data;
 
     if (data === 'morse') {
-        bot.sendMessage(chatId, 'Kirim teks yang ingin dikonversi ke Morse atau kirim kode Morse yang ingin dikonversi ke teks. Gunakan perintah:\n/morse [teks]\n/text [kode Morse]');
+        bot.sendMessage(chatId, 'Kirim teks yang ingin dikonversi ke Morse atau kirim kode Morse yang ingin dikonversi ke teks. Gunakan format:\n/morse [teks]\n/text [kode Morse]');
     } else if (data === 'download') {
-        bot.sendMessage(chatId, 'Kirim link YouTube yang ingin Anda download. Gunakan perintah:\n/download [link YouTube]');
+        bot.sendMessage(chatId, 'Kirim link YouTube yang ingin Anda download. Gunakan format:\n/download [link YouTube]');
     }
 });
 
@@ -113,8 +113,8 @@ bot.on('callback_query', async (callbackQuery) => {
 
     const info = await ytdl.getInfo(url);
     const title = info.videoDetails.title.replace(/[^a-zA-Z0-9 ]/g, "");
-    const videoFileName = `${title}.mp4`;
-    const audioFileName = `${title}.mp3`;
+    const videoFileName = `Gabutc_exploitz_${title}.mp4`;
+    const audioFileName = `Gabutc_exploitz_${title}.mp3`;
 
     if (format === 'mp4') {
         bot.sendMessage(chatId, 'Downloading your video as MP4...');
