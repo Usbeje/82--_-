@@ -42,18 +42,6 @@ const morseToText = (morse) => {
     }).join('');
 };
 
-bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
-    const welcomeMessage = 'Selamat datang! Pilih opsi berikut:';
-    const options = {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: 'Kode Morse', callback_data: 'morse' }],
-                [{ text: 'Download YouTube', callback_data: 'download' }]
-            ]
-        }
-    };
-
     bot.sendMessage(chatId, welcomeMessage, options);
 });
 
@@ -150,7 +138,7 @@ bot.on('message', (msg) => {
     const text = msg.text;
 
     if (!text.startsWith('/morse') && !text.startsWith('/text') && !text.startsWith('/download') && !text.startsWith('/start')) {
-        bot.sendMessage(chatId, 'Gunakan perintah /morse, /text, atau /download untuk menggunakan fitur bot ini. Ketik /start untuk memulai.');
+        bot.sendMessage(chatId, 'Selamat Datang! Gunakan perintah /morse, /text, atau /download untuk menggunakan fitur bot ini. Ketik /start untuk memulai. created by 🇬 🇦 🇧 🇺 🇹 🇨 -🇧 🇴 🇹 🇿 ');
     }
 });
 
