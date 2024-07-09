@@ -113,8 +113,8 @@ bot.on('callback_query', async (callbackQuery) => {
 
     const info = await ytdl.getInfo(url);
     const title = info.videoDetails.title.replace(/[^a-zA-Z0-9 ]/g, "");
-    const videoFileName = `Gabutc_exploitz_${title}.mp4`;
-    const audioFileName = `Gabutc_exploitz_${title}.mp3`;
+    const videoFileName = `Gabutc_botz_${title}.mp4`;
+    const audioFileName = `Gabutc_botz_${title}.mp3`;
 
     if (format === 'mp4') {
         bot.sendMessage(chatId, 'Downloading your video as MP4...');
