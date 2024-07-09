@@ -1,12 +1,16 @@
 const TelegramBot = require('node-telegram-bot-api');
+const ytdl = require('ytdl-core');
+const fs = require('fs');
+const path = require('path');
+const ffmpeg = require('fluent-ffmpeg');
 
-// Replace with your Telegram bot token
+// Ganti dengan token bot Telegram Anda
 const token = '7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8';
 
-// Create a bot that uses 'polling' to fetch new updates
+// Buat bot yang menggunakan 'polling' untuk mendapatkan pembaruan baru
 const bot = new TelegramBot(token, { polling: true });
 
-// Dictionary for Morse code conversion
+// Kamus untuk konversi kode Morse
 const morseDict = {
     'a': '•–', 'b': '–•••', 'c': '–•–•', 'd': '–••', 'e': '•',
     'f': '••–•', 'g': '––•', 'h': '••••', 'i': '••', 'j': '•–––',
@@ -18,27 +22,53 @@ const morseDict = {
     '0': '–––––', ' ': '/'
 };
 
-// Reverse dictionary for Morse code to text conversion
+// Kamus terbalik untuk konversi Morse ke teks
 const reverseMorseDict = {};
 for (let key in morseDict) {
     reverseMorseDict[morseDict[key]] = key;
 }
 
-// Function to convert text to Morse code
+// Fungsi untuk mengonversi teks ke Morse
 const textToMorse = (text) => {
     return text.toLowerCase().split('').map(char => {
-        return morseDict[char] || char; // If character not in dictionary, leave it as is
+        return morseDict[char] || char; // Jika karakter tidak ada di kamus, biarkan apa adanya
     }).join(' ');
 };
 
-// Function to convert Morse code to text
+// Fungsi untuk mengonversi Morse ke teks
 const morseToText = (morse) => {
     return morse.split(' ').map(code => {
-        return reverseMorseDict[code] || code; // If Morse code not in dictionary, leave it as is
+        return reverseMorseDict[code] || code; // Jika kode Morse tidak ada di kamus, biarkan apa adanya
     }).join('');
 };
 
-// Listen for messages starting with '/morse' to convert text to Morse code
+bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    const welcomeMessage = 'Selamat datang! Pilih opsi berikut:';
+    const options = {
+        reply_markup: {
+            inline_keyboard: [
+                [{ text: 'Kode Morse', callback_data: 'morse' }],
+                [{ text: 'Download YouTube', callback_data: 'download' }]
+            ]
+        }
+    };
+
+    bot.sendMessage(chatId, welcomeMessage, options);
+});
+
+bot.on('callback_query', (callbackQuery) => {
+    const message = callbackQuery.message;
+    const chatId = message.chat.id;
+    const data = callbackQuery.data;
+
+    if (data === 'morse') {
+        bot.sendMessage(chatId, 'Kirim teks yang ingin dikonversi ke Morse atau kirim kode Morse yang ingin dikonversi ke teks. Gunakan perintah:\n/morse [teks]\n/text [kode Morse]');
+    } else if (data === 'download') {
+        bot.sendMessage(chatId, 'Kirim link YouTube yang ingin Anda download. Gunakan perintah:\n/download [link YouTube]');
+    }
+});
+
 bot.onText(/\/morse (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const text = match[1];
@@ -47,7 +77,6 @@ bot.onText(/\/morse (.+)/, (msg, match) => {
     bot.sendMessage(chatId, `Kode morse:\n\n${morse}`);
 });
 
-// Listen for messages starting with '/text' to convert Morse code to text
 bot.onText(/\/text (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const morse = match[1];
@@ -56,33 +85,72 @@ bot.onText(/\/text (.+)/, (msg, match) => {
     bot.sendMessage(chatId, `Teks:\n\n${text}`);
 });
 
-// Handle /start command to show the help message
-bot.onText(/\/help/, (msg) => {
+bot.onText(/\/download (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-    const helpMessage = `
-Sure! Here's the corrected version:
+    const url = match[1];
 
-Hi, I'm a bot created by Gabutc_exploitz. I'm here to help you solve Morse code😁!
-
-Gunakan perintah berikut:
-
-- /morse [teks]: Untuk mengonversi teks ke kode Morse.
-- /text [kode Morse]: Untuk mengonversi kode Morse ke teks.
-
-Contoh:
-- /morse halo
-- /text •– •–• •–•• –•`;
-
-    bot.sendMessage(chatId, helpMessage);
+    if (ytdl.validateURL(url)) {
+        const info = await ytdl.getInfo(url);
+        const title = info.videoDetails.title.replace(/[^a-zA-Z0-9 ]/g, "");
+        
+        bot.sendMessage(chatId, 'Pilih format download:', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: 'MP4', callback_data: `mp4_${url}` }],
+                    [{ text: 'MP3', callback_data: `mp3_${url}` }]
+                ]
+            }
+        });
+    } else {
+        bot.sendMessage(chatId, 'Tolong kirim link YouTube yang valid.');
+    }
 });
 
-// Handle general messages to show a reminder to use commands
+bot.on('callback_query', async (callbackQuery) => {
+    const message = callbackQuery.message;
+    const chatId = message.chat.id;
+    const [format, url] = callbackQuery.data.split('_');
+
+    const info = await ytdl.getInfo(url);
+    const title = info.videoDetails.title.replace(/[^a-zA-Z0-9 ]/g, "");
+    const videoFileName = `${title}.mp4`;
+    const audioFileName = `${title}.mp3`;
+
+    if (format === 'mp4') {
+        bot.sendMessage(chatId, 'Downloading your video as MP4...');
+        ytdl(url, { quality: 'highestvideo' })
+            .pipe(fs.createWriteStream(path.join(__dirname, videoFileName)))
+            .on('finish', () => {
+                bot.sendVideo(chatId, path.join(__dirname, videoFileName))
+                    .then(() => fs.unlinkSync(path.join(__dirname, videoFileName))); // Hapus file setelah dikirim
+            })
+            .on('error', (err) => {
+                bot.sendMessage(chatId, 'An error occurred while downloading the video.');
+                console.error(err);
+            });
+    } else if (format === 'mp3') {
+        bot.sendMessage(chatId, 'Downloading your video as MP3...');
+        const videoStream = ytdl(url, { quality: 'highestaudio' });
+        ffmpeg(videoStream)
+            .audioBitrate(128)
+            .save(path.join(__dirname, audioFileName))
+            .on('end', () => {
+                bot.sendAudio(chatId, path.join(__dirname, audioFileName))
+                    .then(() => fs.unlinkSync(path.join(__dirname, audioFileName))); // Hapus file setelah dikirim
+            })
+            .on('error', (err) => {
+                bot.sendMessage(chatId, 'An error occurred while converting the video.');
+                console.error(err);
+            });
+    }
+});
+
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
-    if (!text.startsWith('/morse') && !text.startsWith('/text') && !text.startsWith('/help')) {
-        bot.sendMessage(chatId, 'Gunakan perintah /morse atau /text untuk mengonversi teks. Ketik /help untuk bantuan.');
+    if (!text.startsWith('/morse') && !text.startsWith('/text') && !text.startsWith('/download') && !text.startsWith('/start')) {
+        bot.sendMessage(chatId, 'Gunakan perintah /morse, /text, atau /download untuk menggunakan fitur bot ini. Ketik /start untuk memulai.');
     }
 });
 
