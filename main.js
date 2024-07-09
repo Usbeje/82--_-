@@ -42,9 +42,6 @@ const morseToText = (morse) => {
     }).join('');
 };
 
-    bot.sendMessage(chatId, welcomeMessage, options);
-});
-
 bot.on('callback_query', (callbackQuery) => {
     const message = callbackQuery.message;
     const chatId = message.chat.id;
