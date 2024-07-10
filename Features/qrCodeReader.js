@@ -2,6 +2,11 @@ const axios = require('axios');
 const FormData = require('form-data');
 
 module.exports = (bot) => {
+  bot.onText(/\/qr/, (msg) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(chatId, 'Silakan kirim gambar kode QR.');
+  });
+
   bot.on('photo', async (msg) => {
     const chatId = msg.chat.id;
     const fileId = msg.photo[msg.photo.length - 1].file_id;
