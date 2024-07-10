@@ -1,7 +1,6 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
 
 module.exports = (bot) => {
   bot.onText(/\/download (.+)/, async (msg, match) => {
@@ -42,13 +41,19 @@ module.exports = (bot) => {
   });
 
   function getYouTubeVideoId(url) {
-    const parsedUrl = new URL(url);
-    const searchParams = new URLSearchParams(parsedUrl.search);
-    return searchParams.get('v');
+    let videoId = null;
+    if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1].split('?')[0];
+    } else {
+      const parsedUrl = new URL(url);
+      const searchParams = new URLSearchParams(parsedUrl.search);
+      videoId = searchParams.get('v');
+    }
+    return videoId;
   }
 
   async function fetchYouTubeVideoInfo(videoId) {
-    const url = `https://www.youtube.be/get_video_info?video_id=${videoId}`;
+    const url = `https://www.youtube.com/get_video_info?video_id=${videoId}`;
     const response = await axios.get(url);
     const info = parseQueryString(response.data);
     return info;
