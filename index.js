@@ -4,7 +4,7 @@ const qrCodeReader = require('./features/qrCodeReader');
 const youtubeDownload = require('./features/youtubeDownload');
 
 // Masukkan token bot Anda di sini
-const token = '7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8';
+const token = 'YOUR_TELEGRAM_BOT_TOKEN';
 
 // Buat instance bot
 const bot = new TelegramBot(token, { polling: true });
