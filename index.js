@@ -9,7 +9,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 bot.start((ctx) => {
   ctx.reply(
-    'Selamat datang! Pilih fitur yang ingin digunakan! :',
+    'Selamat datang! Pilih fitur yang ingin digunakan:',
     Markup.inlineKeyboard([
       [Markup.button.callback('Kode QR', 'start_qr')],
       [Markup.button.callback('Download YouTube', 'start_download')],
