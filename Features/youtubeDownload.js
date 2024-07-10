@@ -24,15 +24,23 @@ module.exports = (bot) => {
           const fileType = filePath.endsWith('.mp3') ? 'audio' : 'video';
           if (fileType === 'video') {
             bot.sendVideo(chatId, filePath)
-              .then(() => cleanupFiles([filePath]));
+              .then(() => cleanupFiles([filePath]))
+              .catch((err) => {
+                bot.sendMessage(chatId, 'Failed to send video.');
+                console.error('Error sending video:', err);
+              });
           } else {
             bot.sendAudio(chatId, filePath)
-              .then(() => cleanupFiles([filePath]));
+              .then(() => cleanupFiles([filePath]))
+              .catch((err) => {
+                bot.sendMessage(chatId, 'Failed to send audio.');
+                console.error('Error sending audio:', err);
+              });
           }
         })
         .catch((err) => {
           bot.sendMessage(chatId, 'An error occurred while downloading the video.');
-          console.error(err);
+          console.error('Error downloading video:', err);
         });
 
     } catch (error) {
@@ -76,17 +84,14 @@ module.exports = (bot) => {
     const videoId = videoInfo.videoId;
     const url = `https://www.youtube.com/watch?v=${videoId}`;
 
-    // Example of using a library like ytdl-core or axios to download the video
-    // Implement your download logic here
-    // Example using axios:
     const response = await axios.get(url, { responseType: 'stream' });
-    const filePath = path.join(__dirname, `${title}.mp4`); // Example file path, adjust as needed
+    const filePath = path.join(__dirname, `${title}.mp4`);
 
     response.data.pipe(fs.createWriteStream(filePath));
 
     return new Promise((resolve, reject) => {
       response.data.on('end', () => resolve(filePath));
-      response.data.on('error', reject);
+      response.data.on('error', (err) => reject(new Error('Error downloading video stream.')));
     });
   }
 
