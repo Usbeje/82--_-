@@ -1,7 +1,7 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-const { URLSearchParams } = require('url');
+const { URL } = require('url');
 
 module.exports = (bot) => {
   bot.onText(/\/download (.+)/, async (msg, match) => {
@@ -15,36 +15,34 @@ module.exports = (bot) => {
       }
 
       const videoInfo = await fetchYouTubeVideoInfo(videoId);
-      const title = videoInfo.title.replace(/[^a-zA-Z0-9 ]/g, '');
+      const title = sanitizeFileName(videoInfo.title);
 
       bot.sendMessage(chatId, `Downloading video: ${title}`);
 
-      downloadVideo(videoInfo, chatId)
-        .then((filePath) => {
-          const fileType = filePath.endsWith('.mp3') ? 'audio' : 'video';
-          if (fileType === 'video') {
-            bot.sendVideo(chatId, filePath)
-              .then(() => cleanupFiles([filePath]))
-              .catch((err) => {
-                bot.sendMessage(chatId, 'Failed to send video.');
-                console.error('Error sending video:', err);
-              });
-          } else {
-            bot.sendAudio(chatId, filePath)
-              .then(() => cleanupFiles([filePath]))
-              .catch((err) => {
-                bot.sendMessage(chatId, 'Failed to send audio.');
-                console.error('Error sending audio:', err);
-              });
-          }
-        })
-        .catch((err) => {
-          bot.sendMessage(chatId, 'An error occurred while downloading the video.');
-          console.error('Error downloading video:', err);
-        });
+      const filePath = await downloadVideo(videoId, title);
+      if (!filePath) {
+        throw new Error('Failed to download video.');
+      }
+
+      const fileType = filePath.endsWith('.mp3') ? 'audio' : 'video';
+      if (fileType === 'video') {
+        bot.sendVideo(chatId, filePath)
+          .then(() => cleanupFiles([filePath]))
+          .catch((err) => {
+            bot.sendMessage(chatId, 'Failed to send video.');
+            console.error('Error sending video:', err);
+          });
+      } else {
+        bot.sendAudio(chatId, filePath)
+          .then(() => cleanupFiles([filePath]))
+          .catch((err) => {
+            bot.sendMessage(chatId, 'Failed to send audio.');
+            console.error('Error sending audio:', err);
+          });
+      }
 
     } catch (error) {
-      bot.sendMessage(chatId, 'Error: ' + error.message);
+      bot.sendMessage(chatId, 'An error occurred while downloading the video.');
       console.error('Error:', error);
     }
   });
@@ -55,7 +53,7 @@ module.exports = (bot) => {
       videoId = url.split('youtu.be/')[1].split('?')[0];
     } else {
       const parsedUrl = new URL(url);
-      const searchParams = new URLSearchParams(parsedUrl.search);
+      const searchParams = parsedUrl.searchParams;
       videoId = searchParams.get('v');
     }
     return videoId;
@@ -64,7 +62,7 @@ module.exports = (bot) => {
   async function fetchYouTubeVideoInfo(videoId) {
     const apiKey = 'AIzaSyCTTDoc3logk8bMmxS-ZbfsIMrJNGvfA2I'; // Replace with your actual YouTube API key
     const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`;
-    
+
     try {
       const response = await axios.get(url);
       if (response.data.items.length > 0) {
@@ -80,19 +78,28 @@ module.exports = (bot) => {
     }
   }
 
-  async function downloadVideo(videoInfo, chatId) {
-    const videoId = videoInfo.videoId;
+  async function downloadVideo(videoId, title) {
     const url = `https://www.youtube.com/watch?v=${videoId}`;
-
-    const response = await axios.get(url, { responseType: 'stream' });
     const filePath = path.join(__dirname, `${title}.mp4`);
 
-    response.data.pipe(fs.createWriteStream(filePath));
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: url,
+        responseType: 'stream'
+      });
 
-    return new Promise((resolve, reject) => {
-      response.data.on('end', () => resolve(filePath));
-      response.data.on('error', (err) => reject(new Error('Error downloading video stream.')));
-    });
+      response.data.pipe(fs.createWriteStream(filePath));
+
+      return new Promise((resolve, reject) => {
+        response.data.on('end', () => resolve(filePath));
+        response.data.on('error', (err) => reject(err));
+      });
+
+    } catch (error) {
+      console.error('Error downloading video:', error);
+      return null;
+    }
   }
 
   function cleanupFiles(files) {
@@ -103,5 +110,9 @@ module.exports = (bot) => {
         console.error('Error deleting file:', err);
       }
     });
+  }
+
+  function sanitizeFileName(fileName) {
+    return fileName.replace(/[^a-zA-Z0-9 ]/g, '');
   }
 };
