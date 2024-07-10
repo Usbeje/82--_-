@@ -9,27 +9,20 @@ const morseDict = {
   '0': '–––––', ' ': '/'
 };
 
-function encodeToMorse(text) {
-  return text.toLowerCase().split('').map(char => morseDict[char] || '').join(' ');
-}
-
-function decodeFromMorse(morseCode) {
-  const reversedMorseDict = Object.fromEntries(Object.entries(morseDict).map(([k, v]) => [v, k]));
-  return morseCode.split(' ').map(code => reversedMorseDict[code] || '').join('');
-}
+const morse = require('morse');
 
 module.exports = (bot) => {
   bot.onText(/\/morse (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const textToConvert = match[1];
-    const morseCode = encodeToMorse(textToConvert);
+    const morseCode = morse.encode(textToConvert);
     bot.sendMessage(chatId, `Kode Morse dari "${textToConvert}" adalah:\n${morseCode}`);
   });
 
   bot.onText(/\/text (.+)/, (msg, match) => {
     const chatId = msg.chat.id;
     const morseToConvert = match[1];
-    const plainText = decodeFromMorse(morseToConvert);
+    const plainText = morse.decode(morseToConvert);
     bot.sendMessage(chatId, `Teks dari kode Morse "${morseToConvert}" adalah:\n${plainText}`);
   });
 };
