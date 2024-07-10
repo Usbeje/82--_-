@@ -30,8 +30,12 @@ module.exports = (bot) => {
           }
         })
         .catch((err) => {
-          bot.sendMessage(chatId, 'An error occurred while downloading the video.');
-          console.error(err);
+          if (err.response && err.response.status === 410) {
+            bot.sendMessage(chatId, 'Video tidak lagi tersedia.');
+          } else {
+            bot.sendMessage(chatId, 'An error occurred while downloading the video.');
+            console.error(err);
+          }
         });
 
     } catch (error) {
@@ -54,7 +58,11 @@ module.exports = (bot) => {
 
   async function fetchYouTubeVideoInfo(videoId) {
     const url = `https://www.youtube.com/get_video_info?video_id=${videoId}`;
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
     const info = parseQueryString(response.data);
     return info;
   }
