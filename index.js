@@ -5,7 +5,7 @@ const morseCode = require('./features/morseCode');
 const cekKiamat = require('./features/cekKiamat');
 require('dotenv').config();
 
-const bot = new Telegraf(process.env.7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8);
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 bot.start((ctx) => {
   ctx.reply(
