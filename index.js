@@ -1,8 +1,8 @@
 const TelegramBot = require('node-telegram-bot-api');
-const qrCodeReader = require('./features/qrCodeReader');
-const youtubeDownload = require('./features/youtubeDownload');
-const morseCode = require('./features/morseCode');
-const cekKiamat = require('./features/cekKiamat');
+const qrCodeReader = require('./Features/qrCodeReader');
+const youtubeDownload = require('./Features/youtubeDownload');
+const morseCode = require('./Features/morseCode');
+const cekKiamat = require('./Features/cekKiamat');
 
 // Masukkan token bot Anda di sini
 const token = '7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8';
