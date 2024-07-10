@@ -1,35 +1,43 @@
 const fs = require('fs');
 const path = require('path');
 
-const usersFile = path.join(__dirname, 'users.json');
-
-function loadUsers() {
-  if (fs.existsSync(usersFile)) {
-    return JSON.parse(fs.readFileSync(usersFile));
-  } else {
-    return {};
-  }
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(usersFile, JSON.stringify(users));
-}
-
 module.exports = (bot) => {
-  bot.onText(/\/cekkiamat/, (msg) => {
+  bot.onText(/\/cek_kiamat/, (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
-    const users = loadUsers();
+    const filePath = path.join(__dirname, 'kiamat.json');
 
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    // Baca file kiamat.json
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        console.error(err);
+        bot.sendMessage(chatId, 'Terjadi kesalahan saat membaca data.');
+        return;
+      }
 
-    if (users[userId] && users[userId].lastCheck === today) {
-      bot.sendMessage(chatId, 'Anda sudah cek kiamat hari ini. Silakan coba lagi besok.');
-    } else {
-      users[userId] = { lastCheck: today };
-      saveUsers(users);
-      bot.sendMessage(chatId, 'Tidak ada tanda-tanda kiamat hari ini. Silakan cek lagi besok.');
-    }
+      let userData = {};
+      if (data) {
+        userData = JSON.parse(data);
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+
+      if (userData[userId] === today) {
+        bot.sendMessage(chatId, 'Anda sudah memeriksa kiamat hari ini. Coba lagi besok.');
+      } else {
+        userData[userId] = today;
+
+        // Simpan data ke kiamat.json
+        fs.writeFile(filePath, JSON.stringify(userData), 'utf8', (err) => {
+          if (err) {
+            console.error(err);
+            bot.sendMessage(chatId, 'Terjadi kesalahan saat menyimpan data.');
+            return;
+          }
+
+          bot.sendMessage(chatId, 'Hari ini bukan hari kiamat. Coba lagi besok.');
+        });
+      }
+    });
   });
 };
