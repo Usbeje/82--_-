@@ -48,7 +48,7 @@ module.exports = (bot) => {
   }
 
   async function fetchYouTubeVideoInfo(videoId) {
-    const url = `https://www.youtube.com/get_video_info?video_id=${videoId}`;
+    const url = `https://www.youtube.be/get_video_info?video_id=${videoId}`;
     const response = await axios.get(url);
     const info = parseQueryString(response.data);
     return info;
