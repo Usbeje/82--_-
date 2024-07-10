@@ -5,11 +5,11 @@ const morseCode = require('./features/morseCode');
 const cekKiamat = require('./features/cekKiamat');
 require('dotenv').config();
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
+const bot = new Telegraf(process.env.7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8);
 
 bot.start((ctx) => {
   ctx.reply(
-    'Selamat datang! Pilih fitur yang ingin Anda gunakan:',
+    'Selamat datang! Pilih fitur yang ingin digunakan! :',
     Markup.inlineKeyboard([
       [Markup.button.callback('Kode QR', 'start_qr')],
       [Markup.button.callback('Download YouTube', 'start_download')],
