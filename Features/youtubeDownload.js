@@ -61,14 +61,14 @@ module.exports = (bot) => {
 
   async function fetchYouTubeVideoInfo(videoId) {
     const apiKey = 'AIzaSyCTTDoc3logk8bMmxS-ZbfsIMrJNGvfA2I'; // Replace with your actual YouTube API key
-    const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`;
+    const url = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet,contentDetails`;
 
     try {
       const response = await axios.get(url);
       if (response.data.items.length > 0) {
         return {
           title: response.data.items[0].snippet.title,
-          videoId: videoId
+          duration: response.data.items[0].contentDetails.duration
         };
       } else {
         throw new Error('Video not found.');
