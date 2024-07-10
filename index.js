@@ -1,8 +1,8 @@
 const { Telegraf, Markup } = require('telegraf');
-const qrCodeReader = require('./features/qrCodeReader');
-const youtubeDownload = require('./features/youtubeDownload');
-const morseCode = require('./features/morseCode');
-const cekKiamat = require('./features/cekKiamat');
+const qrCodeReader = require('./Features/qrCodeReader');
+const youtubeDownload = require('./Features/youtubeDownload');
+const morseCode = require('./Features/morseCode');
+const cekKiamat = require('./Features/cekKiamat');
 
 // Ganti dengan token bot Telegram Anda
 const TELEGRAM_BOT_TOKEN = '7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8';
