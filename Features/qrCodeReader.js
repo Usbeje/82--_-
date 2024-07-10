@@ -2,13 +2,10 @@ const axios = require('axios');
 const FormData = require('form-data');
 
 module.exports = (bot) => {
-  bot.action('start_qr', (ctx) => {
-    ctx.reply('Silakan kirim gambar kode QR.');
-  });
-
-  bot.on('photo', async (ctx) => {
-    const fileId = ctx.message.photo[ctx.message.photo.length - 1].file_id;
-    const fileUrl = await ctx.telegram.getFileLink(fileId);
+  bot.on('photo', async (msg) => {
+    const chatId = msg.chat.id;
+    const fileId = msg.photo[msg.photo.length - 1].file_id;
+    const fileUrl = await bot.getFileLink(fileId);
 
     try {
       const form = new FormData();
@@ -20,12 +17,12 @@ module.exports = (bot) => {
 
       const qrData = response.data[0].symbol[0].data;
       if (qrData) {
-        ctx.reply(`Kode QR berhasil diubah menjadi URL: ${qrData}`);
+        bot.sendMessage(chatId, `Kode QR berhasil diubah menjadi URL: ${qrData}`);
       } else {
-        ctx.reply('Tidak dapat membaca kode QR.');
+        bot.sendMessage(chatId, 'Tidak dapat membaca kode QR.');
       }
     } catch (error) {
-      ctx.reply('Terjadi kesalahan saat memproses kode QR.');
+      bot.sendMessage(chatId, 'Terjadi kesalahan saat memproses kode QR.');
       console.error(error);
     }
   });
