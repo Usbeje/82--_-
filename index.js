@@ -2,9 +2,10 @@ const TelegramBot = require('node-telegram-bot-api');
 const morseCode = require('./features/morseCode');
 const qrCodeReader = require('./features/qrCodeReader');
 const youtubeDownload = require('./features/youtubeDownload');
+const checkKiamat = require('./features/checkKiamat');
 
 // Masukkan token bot Anda di sini
-const token = 'YOUR_TELEGRAM_BOT_TOKEN';
+const token = '7323908580:AAEJRXUBNDaVNUHK-6XmOr7ycLG65fqq1X8';
 
 // Buat instance bot
 const bot = new TelegramBot(token, { polling: true });
@@ -17,7 +18,8 @@ bot.onText(/\/start/, (msg) => {
       inline_keyboard: [
         [{ text: 'Kode Morse', callback_data: 'morse' }],
         [{ text: 'Pembaca QR', callback_data: 'qr' }],
-        [{ text: 'Download YouTube', callback_data: 'youtube' }]
+        [{ text: 'Download YouTube', callback_data: 'youtube' }],
+        [{ text: 'Cek Kiamat', callback_data: 'kiamat' }]
       ]
     }
   };
@@ -36,6 +38,8 @@ bot.on('callback_query', (callbackQuery) => {
     bot.sendMessage(chatId, 'Silakan kirim gambar kode QR.');
   } else if (data === 'youtube') {
     bot.sendMessage(chatId, 'Kirim link YouTube yang ingin Anda download. Gunakan format:\n/download [link YouTube]');
+  } else if (data === 'kiamat') {
+    bot.sendMessage(chatId, 'Cek status kiamat. Gunakan perintah:\n/cekkiamat');
   }
 });
 
@@ -43,5 +47,6 @@ bot.on('callback_query', (callbackQuery) => {
 morseCode(bot);
 qrCodeReader(bot);
 youtubeDownload(bot);
+checkKiamat(bot);
 
 console.log('Bot sedang berjalan...');
