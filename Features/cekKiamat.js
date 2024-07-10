@@ -5,7 +5,7 @@ module.exports = (bot) => {
   bot.onText(/\/cek_kiamat/, (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
-    const filePath = path.join(__dirname, 'kiamat.json');
+    const filePath = path.join(__dirname, 'users.json');
 
     // Baca file kiamat.json
     fs.readFile(filePath, 'utf8', (err, data) => {
