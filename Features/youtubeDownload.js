@@ -4,10 +4,6 @@ const path = require('path');
 const ffmpeg = require('fluent-ffmpeg');
 
 module.exports = (bot) => {
-  bot.action('start_download', (ctx) => {
-    ctx.reply('Silakan kirim URL YouTube untuk diunduh sebagai MP3 atau MP4.');
-  });
-
   bot.onText(/\/download (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const url = match[1];
@@ -15,7 +11,7 @@ module.exports = (bot) => {
     if (ytdl.validateURL(url)) {
       const info = await ytdl.getInfo(url);
       const title = info.videoDetails.title.replace(/[^a-zA-Z0-9 ]/g, "");
-      
+
       bot.sendMessage(chatId, 'Pilih format download:', {
         reply_markup: {
           inline_keyboard: [
