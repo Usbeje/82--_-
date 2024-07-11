@@ -5,7 +5,7 @@ const morseCode = require('./Features/morseCode');
 const cekKiamat = require('./Features/cekKiamat');
 
 // Masukkan token bot Anda di sini
-const token = '7311386718:AAGihZ7CGoVz7sHncWdA241Jup3FqVdFZro';
+const token = '
 
 // Buat instance bot
 const bot = new TelegramBot(token, { polling: true });
